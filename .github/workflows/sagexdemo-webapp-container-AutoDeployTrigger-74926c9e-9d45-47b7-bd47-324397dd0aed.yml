@@ -1,0 +1,42 @@
+name: Trigger auto deployment for sagexdemo-webapp-container
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ saaya1 ]
+    paths:
+    - '**'
+    - '.github/workflows/sagexdemo-webapp-container-AutoDeployTrigger-74926c9e-9d45-47b7-bd47-324397dd0aed.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.SAGEXDEMOWEBAPPCONTAINER_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: sagexdemowebapp.azurecr.io
+          registryUsername: ${{ secrets.SAGEXDEMOWEBAPPCONTAINER_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.SAGEXDEMOWEBAPPCONTAINER_REGISTRY_PASSWORD }}
+          containerAppName: sagexdemo-webapp-container
+          resourceGroup: sagexdemoRG
+          imageToBuild: sagexdemowebapp.azurecr.io/sagexdemo-webapp-container:${{ github.sha }}
+          
+
+     
+
